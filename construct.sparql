@@ -1,0 +1,56 @@
+#################################################################
+##                       PREFIXES                              ##
+#################################################################
+
+PREFIX org: <http://qualite-des-eaux-en-pays-de-la-loire.fr/>
+PREFIX rdf: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX dbp: <http://dbpedia.org/property/>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX skos: <http://wwww.w3.org/2004/02/skos/core#>
+PREFIX m3lite: <http://purl.org/iot/vocab/m3-lite#>
+
+################################################################
+##                    CONSTRUCTION                            ##
+################################################################
+CONSTRUCT {
+  ?x    rdf:type                 skos:Concept ;
+        owl:sameAs               dbpedia:Molécule ;
+        dbp:hasParametres        ?parametres ;
+        dbp:isSampleOf           ?cours_eau  ;
+        dbp:isCollectedBy        ?station_mesure ;
+        dbp:prelevement          ?y .
+
+  ?cours_eau  rdf:type  owl:Class ;
+              rdfs:subClassOf dbo:Stream .
+
+  ?y    dbp:hasCode_prelevement  ?code_prelevement ;
+        dbp:hasDate_prelevement  ?date_prelevement ;
+        dbp:hasDate_analyse      ?date_analyse ;
+        dbp:resultat_analyse     ?z .
+
+  ?date_analyse owl:sameAs ?dbo:date .
+  ?date_prelevement owl:sameAs ?dbo:?date .
+
+
+
+  ?z    dbp:hasUnite_mesure      ?unite_mesure ;
+        dbp:hasValue             ?resultat_analyse ;
+        dbp:hasQualification     ?qualification_resultat .
+  ?unite_mesure rdf:type  skos:Concept .
+}
+
+FROM <file:mydata.csv>
+
+WHERE {
+   BIND (URI(CONCAT('http://qualite-des-eaux-en-pays-de-la-loire.fr/', ?parametres )) AS ?x)
+   BIND (URI(CONCAT('http://qualite-des-eaux-en-pays-de-la-loire.fr/', ?parametres , '/' , ?code_prelevement)) AS ?y)
+   BIND (URI(CONCAT('http://qualite-des-eaux-en-pays-de-la-loire.fr/', ?parametres , '/' , ?code_prelevement, '/' , ?resultat_analyse)) AS ?z)
+   BIND ( STRDT(?resultat_analyse, xsd:Integer) AS ?RESULTAT)
+   BIND ( STRDT(?parametres, xsd:string) AS ?PARAMETRES)
+   BIND ( STRDT(?cours_eau , xsd:string) as ?COURS_EAU)
+   BIND ( STRDT(?station_mesure , xsd:string) as ?STATION_MESURE)
+}
